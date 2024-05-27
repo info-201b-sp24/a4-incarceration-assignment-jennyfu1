@@ -19,6 +19,7 @@ ggplot(data = jail_top5_data , mapping=aes(x=year, y=total_jail_pop_rate, color=
   geom_line()+
   labs(title = "The trend over time chart", 
        subtitle = "year vs. total jail population rate", 
+       color = "county names",
        x = "Year (from 1990 to 2018)", 
        y = "Total jail population rate (unit 0.01)")
 

@@ -19,6 +19,7 @@ ggplot(data = WA_map, mapping = aes(x = long, y = lat, group = group, fill = mea
   geom_polygon(color="white")+
   scale_fill_continuous(low = "lightblue", high = "darkblue") +
   coord_map()+
+  theme_minimal()+
   labs(title = "The distribution of Asian population rate by countries", 
        fill = "The Asian mean jail 
        population rate", 
