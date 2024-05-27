@@ -7,7 +7,7 @@ America is the country with the greatest number of people incarcerated in the wo
 
 In this assignment, you will use your data analysis and visualization skills to expose patterns of inequality using incarceration data collected by the [Vera Institute](https://github.com/vera-institute/incarceration-trends). You will create an R Markdown file and share it as a small website via GitHub pages.
 
-This assignment is more open-ended than previous ones. You will be tasked with understanding the data itself, choosing the variables you want to analyze, and deciding the optimal way to write your code. 
+This assignment is more open-ended than previous ones. You will be tasked with understanding the data itself, choosing the variables you want to analyze, and deciding the optimal way to write your code.
 
 # Data
 

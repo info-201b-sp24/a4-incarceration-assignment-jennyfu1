@@ -7,6 +7,11 @@ output: html_document
 
 An introduction of the problem domain and a description of the variable(s) you are choosing to analyze (and why!)
 
+    The data tool (trends.vera.org) is used for collecting the population of prison and jail in country-levels to better understnad the situation of the U.S. nowadays. The problem domain is an analysis of incarceration trend in the U.S.. 
+
+    I have chosen part of the dataset which is [Smaller dataset about prison/jail population per 100,000 people (rate) per county/state starting at 1990 in Washington](https://github.com/melaniewalsh/Neat-Datasets/raw/main/us-prison-jail-rates-1990-WA.csv), the last link in README.md file. Personally, I think the variables I am choosing are clear and comprehensive, the data includes the population rate of various types of people, such as race, sex, and so on. The population rate is calculated by Rate per 100,000 people=(Population Count/Total Population) * 100,000, so the unit is 0.01, and we can interpret them as each unit represents 1 in 100,000.
+
+
 ### Summary Information
 
 Write a summary paragraph of findings that includes the 5 values calculated from your summary information R script
@@ -14,20 +19,133 @@ Write a summary paragraph of findings that includes the 5 values calculated from
 These will likely be calculated using your DPLYR skills, answering questions such as: 
 
 - What is the average value of my variable across all the counties (in the current year)?
+
+    - Since the dataset contains lots of no values in year 2017 and 2018, so we can only get the average total jail or prison population rate of all the counties from 1990 to 2016. Thus, for the current year, 2016, the average total jail population is about 325.7, and the average total prison population is about 450.6. Moreover, by observing the average of each year, we can say the trend of incarcration is increasing but decreasing from 2015. 
+
 - Where is my variable the highest / lowest?
+
+    - As we can see in the summary.R file, I have calculated both the max and min jail population rate of all races, and the rate for Asian people is the highest, which has the maximum 41750 in Pend Oreille County. Moreover, for the lowest, many data shows 0 in some races. 
+
 - How much has my variable change over the last N years?
 
+    - To classify the data by counties, we get the maximum change in Ferry County, which increases 451.95 total jail population rate from 1990 to 2018. 
+
 Feel free to calculate and report values that you find relevant. Again, remember that the purpose is to think about how these measure of incarceration vary by race.
+
+Here are the values: 
+
+``````{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(dplyr)
+prison <- read.csv("https://github.com/melaniewalsh/Neat-Datasets/raw/main/us-prison-jail-rates-1990-WA.csv")
+
+mean_byyear <- prison %>%
+  filter(!is.na(total_jail_pop_rate), !is.na(total_prison_pop_rate)) %>%
+  group_by(year) %>%
+  summarise(mean_jail = mean(total_jail_pop_rate), 
+            mean_prison = mean(total_prison_pop_rate))
+
+
+maxmin_jail_bycounty_race <- prison %>%
+  group_by(county_name) %>%
+  summarise(max_white_rate=max(white_jail_pop_rate), 
+            min_white_rate=min(white_jail_pop_rate), 
+            max_black_rate=max(black_jail_pop_rate), 
+            min_black_rate=min(black_jail_pop_rate), 
+            max_latinx_rate=max(latinx_jail_pop_rate), 
+            min_latinx_rate=min(latinx_jail_pop_rate), 
+            max_aapi_rate=max(aapi_jail_pop_rate), 
+            min_aapi_rate=min(aapi_jail_pop_rate), 
+            max_native_rate=max(native_jail_pop_rate), 
+            min_native_rate=min(native_jail_pop_rate) )
+
+
+changes_jail_bycounty <- prison %>%
+  group_by(county_name) %>%
+  summarise(change_total_pop_rate = total_jail_pop_rate[year==2018] - total_jail_pop_rate[year==1990],
+         change_white_pop_rate = white_jail_pop_rate[year==2018] - white_jail_pop_rate[year==1990], 
+         change_black_pop_rate = black_jail_pop_rate[year==2018] - black_jail_pop_rate[year==1990], 
+         change_latinx_pop_rate = latinx_jail_pop_rate[year==2018] - latinx_jail_pop_rate[year==1990],
+         change_aapi_pop_rate = aapi_jail_pop_rate[year==2018] - aapi_jail_pop_rate[year==1990], 
+         change_native_pop_rate = native_jail_pop_rate[year==2018] - native_jail_pop_rate[year==1990])
+
+
+
+
+mean_2016 <- mean_byyear %>% filter(year==2016)
+mean_2016
+
+mean_1990 <- mean_byyear %>% filter(year==1990)
+mean_1990
+
+max_jail_black <- maxmin_jail_bycounty_race %>%
+  arrange(desc(max_black_rate)) %>%
+  slice_head(n=1) %>% 
+  select(county_name, max_black_rate)
+max_jail_black
+
+max_jail_white <- maxmin_jail_bycounty_race %>%
+  arrange(desc(max_white_rate)) %>%
+  slice_head(n=1) %>%
+  select(county_name, max_white_rate)
+max_jail_white
+
+max_jail_aapi <- maxmin_jail_bycounty_race %>%
+  arrange(desc(max_aapi_rate)) %>%
+  slice_head(n=1) %>%
+  select(county_name, max_aapi_rate)
+max_jail_aapi
+
+max_jail_latinx <- maxmin_jail_bycounty_race %>%
+  arrange(desc(max_latinx_rate)) %>%
+  slice_head(n=1) %>%
+  select(county_name, max_latinx_rate)
+max_jail_latinx
+
+max_changes_jail_total <- changes_jail_bycounty %>%
+  arrange(desc(change_total_pop_rate)) %>%
+  slice_head(n=1) %>%
+  select(county_name, change_total_pop_rate)
+max_changes_jail_total
+
+min_changes_jail_total <- changes_jail_bycounty %>%
+  arrange(change_total_pop_rate) %>%
+  slice_head(n=1) %>%
+  select(county_name, change_total_pop_rate)
+min_changes_jail_total
+``````
+
+    - As a summary paragraph for the information, I can say that by comparing the average total jail population rate of year 1990 with 2016, I can conclude that there is an increase of population in the past few years. For races, Asian, Black and Latinx all have significantly higher jail population rate than White one, so there maybe racial problem, but we cannot make an exact conclusion only based on this. Moreover, by observing the max and min changes in total jail population rate from 1990 to 2016, the maximum is 451.95 and minimum is -200.25, we know that even though the overall trend is increasing, there are still some counties have a decreasing trend of incarceration.  
 
 ### The Dataset
 
 Who collected the data?  
+
+    - The data was compiled by Census of Jails, Census of State and Federal Adult CorrectionalFacilities, FBI Uniform Crime Reporting Program, National Corrections Reporting Program, Deaths in Custody Reporting Program, Annual Survey of Jails, Centers on Disease Control, U.S. Department of Agriculture, and U.S. Census Bureau. Many organizations combined and cooperated together. 
+
 How was the data collected or generated?  
+
+    - The data was combined by many organization's cooperation, and they supplemented it with additional data and information when there are some vacant blanks. 
+
 Why was the data collected?  
+
+    - The data was collected for understand and know the incarceration trends at county-levels in the U.S. comprehensively. Thus, we can a broad range of understanding in jail and prison population but lack the specific and exact data. 
+
 How many observations (rows) are in your data?  
+
+     - There are 1131 observations (rows). 
+
 How many features (columns) are in the data?  
-What, if any, ethical questions or questions of power do you need to consider when working with this data?  
+
+    - There are 23 features (columns). 
+
+What, if any, ethical questions or questions of power do you need to consider when working with this data?
+
+    - I think we should treat this data seriously, even though there is a big difference in population rate between difference races, we cannot simply conclude there is a racism or racial problem, because the situation is much complex. Also, high population rate is not a good thing in this data, so we expect the data has decreasing trend, which means the U.S. may be safer. 
+
 What are possible limitations or problems with this data?   (at least 200 words)
+
+    - Firstly, there are lots of missing values in the dataset, which means the data collection lack comprehensive and accurate, so the final this may influence the final analysis of data. Secondly, as we can see there are lots of organizations engaged in this collection, but it is hard to make sure each of the organization has exactly the same rules and criteria on data collecting, not to mention the different members in each organization. Thus, there may be some bias or error inside. Thirdly, in the codebook of this incarceration trends, there are only descriptions of variables but no calculation or explanation of how they get the value, such as the population rate in the last dataset. For the population rate, at first, I didn’t know what is the formula of this calculation, and it seems strange to me that most of the data are larger than 100, which rarely happened in most of the percentage. Also, I didn’t understand what is the meaning of unit is 0.01, so I think the explanation should be more clear and comprehensive. Finally, I think the data should be more detailed, not only classify them into races and sex, but also other features of people, so that we can analyze them in a more precise way. 
+
 
 
 ### Trends Over Time Chart
@@ -44,10 +162,36 @@ The first chart that you will create and include will show the trend over time o
 
 When we say "clear" or "human readable" titles and labels, that means that you should not just display the variable name.
 
-Here's an example of how to run an R script inside an RMarkdown file:
+Here is the trends over time chart (chart 1):
 
-``````{r, echo = FALSE, code = readLines("chart1_example.R")}
+``````{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(dplyr)
+prison <- read.csv("https://github.com/melaniewalsh/Neat-Datasets/raw/main/us-prison-jail-rates-1990-WA.csv")
+library(ggplot2)
+
+jail_top5 <- prison %>%
+  filter(!is.na(total_jail_pop_rate)) %>%
+  group_by(county_name) %>%
+  summarise(mean=mean(total_jail_pop_rate)) %>%
+  arrange(desc(mean)) %>%
+  slice_head(n=5)
+
+jail_top5_data <- prison %>%
+  filter(!is.na(total_jail_pop_rate)) %>%
+  filter(county_name %in% c("Yakima County", "Douglas County", "Chelan County", "Franklin County", "Garfield County")) 
+
+
+
+ggplot(data = jail_top5_data , mapping=aes(x=year, y=total_jail_pop_rate, color=county_name))+
+  geom_line()+
+  labs(title = "The trend over time chart", 
+       subtitle = "year vs. total jail population rate", 
+       x = "Year (from 1990 to 2018)", 
+       y = "Total jail population rate (unit 0.01)")
 ```
+
+    - For this trends over time chart, there are 5 locations (counties), which are the top 5 counties with the highest average total jail population rate from 1990 to 2018. The reason I have chosen the top 5 counties is that I think the purpose of observing the trend is to better change the situation of large jail populations and insecure outcomes, so it is not necessary to find the trends of counties with lower jail population. Thus, I chosent the top 5, and observed that as the year past, the total jail population rate increased firstly then decreased. Moreover, even though there are some fluctuations in each line, the overall trend is decreasing, which shows a positive phenomenon to us. 
+
 
 ### Variable Comparison Chart
 
@@ -59,6 +203,42 @@ The second chart that you will create and include will show how two different (c
 - The chart needs a clear title 
 - If you choose to add a color encoding (not required), you need a legend for your different color and a clear legend title
 
+Here is the variable comparison chart (chart 2):
+
+``````{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(dplyr)
+prison <- read.csv("https://github.com/melaniewalsh/Neat-Datasets/raw/main/us-prison-jail-rates-1990-WA.csv")
+library(ggplot2)
+
+King_County_data <- prison %>%
+  filter(!is.na(total_pop), !is.na(total_jail_pop_rate)) %>%
+  filter(county_name=="King County")
+
+ggplot(data = King_County_data, mapping = aes(x=total_jail_pop_rate, y=white_jail_pop_rate))+
+  geom_point()+
+  geom_smooth(method="lm",color="red")+
+  labs(title = "Variable comparison chart of King County", 
+       subtitle ="total jail population rate vs. white people in jail population rate", 
+       x = "Total jail population rate (unit 0.01)", 
+       y = "White people in jail population rate (unit 0.01)")
+
+
+Yakima_County_data <- prison %>%
+  filter(!is.na(total_pop), !is.na(total_jail_pop_rate)) %>%
+  filter(county_name=="Yakima County")
+
+ggplot(data = Yakima_County_data, mapping = aes(x=total_jail_pop_rate, y=white_jail_pop_rate))+
+  geom_point()+
+  geom_smooth(method="lm",color="blue")+
+  labs(title = "Variable comparison chart of Yakima County", 
+       subtitle ="total jail population rate vs. white people in jail population rate", 
+       x = "Total jail population rate (unit 0.01)", 
+       y = "White people in jail population rate (unit 0.01)")
+``````
+
+    - I want to know whether there is a relationship between total jail population rate and only white people's population rate in the jail, since I think white people may take part of the proportion from the total population rate. Thus, I have randomly chose two counties- King and Yakima- to get a conclusion, for only one county is not persuasive enough. As we can see the two scatterplot, points of both plots show roughly upward to the right trends, and the two line model are increasing, so we can conclude that based on these two plots there may be a positive relationship between total jail population rate and only white people's population rate in the jail. 
+
+
 ### Map
 
 Include a chart. Make sure to describe why you included the chart, and what patterns emerged
@@ -69,3 +249,35 @@ The last chart that you will create and include will show how a variable is dist
 - Your color scale needs a legend with a clear label
 - Use a map based coordinate system to set the aspect ratio of your map
 
+Here is the map:
+
+``````{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(dplyr)
+prison <- read.csv("https://github.com/melaniewalsh/Neat-Datasets/raw/main/us-prison-jail-rates-1990-WA.csv")
+library(ggplot2)
+library(maps)
+library(mapproj)
+
+Asian_jail_mean_pop_rate <- prison %>%
+  filter(!is.na(aapi_jail_pop_rate)) %>%
+  group_by(county_name) %>%
+  summarise(mean_pop_rate=mean(aapi_jail_pop_rate)) %>%
+  mutate(county = tolower(gsub("\\s.*", "", county_name))) 
+
+WA_map <- map_data("county") %>%
+  filter(region == "washington") %>%
+  rename(county = subregion) %>%
+  left_join(Asian_jail_mean_pop_rate, by = "county")
+
+ggplot(data = WA_map, mapping = aes(x = long, y = lat, group = group, fill = mean_pop_rate))+
+  geom_polygon(color="white")+
+  scale_fill_continuous(low = "lightblue", high = "darkblue") +
+  coord_map()+
+  labs(title = "The distribution of Asian population rate by countries", 
+       fill = "The Asian mean jail 
+       population rate", 
+       x = "Longitude", 
+       y = "Latitude") 
+``````
+
+    - Since before drawing this map, I have already analyze the data of white and black jail population rate in the dataset, this time I want to know the distribution of Asian jail population rate, and whether there is a significant difference between counties. By observing the map, we can see that the blue colors have very little difference between each other, and only some of the parts have dark gray or blue most are lightblue. This means most of the Asian mean jail population rates in different counties are in the range from 0 to 1000, only few are higher than 1000 or do not have the value recorded. Only one county has the darkest blue, which may be the maximum Asian mean jail population rate in WA. 
